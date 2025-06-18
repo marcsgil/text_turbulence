@@ -87,12 +87,12 @@ which can be inverted as
 \end{equation}
 Substituting this expression into the paraxial wave equation \eqref{eq:paraxial}, we obtain
 \begin{equation}
-    \left( k_x^2 + k_y^2 - 2ik \partial_z \right) \tilde{u}(k_x, k_y,z) = 0.
+    \left( -k_x^2 - k_y^2 + 2ik \partial_z \right) \tilde{u}(k_x, k_y,z) = 0.
 \end{equation}
 This is a simple ordinary differential equation in $z$ for each fixed pair $(k_x, k_y)$. The solution can be written as
 \begin{equation}
 \label{eq:solution_paraxial_fourier}
-    \tilde{u}(k_x, k_y,z) = \tilde{u}(k_x, k_y,0) e^{i(k_x^2 + k_y^2)z/(2k)}.
+    \tilde{u}(k_x, k_y,z) = \tilde{u}(k_x, k_y,0) e^{-i(k_x^2 + k_y^2)z/2k}.
 \end{equation}
 
 This provides a step-by-step algorithm for solving the paraxial wave equation:
