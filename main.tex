@@ -151,6 +151,13 @@ This analogy can also be extended to understand the imaging properties of lenses
 
 \subsection{Numerical solution}
 
+\begin{figure*}
+    \includegraphics[width=\linewidth]{wave_on_string.png}
+    \centering
+    \caption{Wave on a string with different boundary conditions. }
+    \label{fig: wave on a string}
+\end{figure*}
+
 Although the angular spectrum method provides a clear algorithm for solving the paraxial wave equation, it is often more practical to implement it numerically. Although it may seem straightforward, there are some subtleties that need to be considered. In this section, we will discuss the numerical implementation of the angular spectrum method and how to avoid common pitfalls. The discussion will be based on the notes \cite{fftderiv}, which provides a detailed explanation of how to calculate derivatives based on the (Discrete) Fourier Transform. To simplify the notation, we will assume a single transverse dimension, i.e., we will consider the paraxial wave equation in 1D. The extension to 2D is straightforward. 
 
 First, we need to recognize that any numerical implementation must handle discrete and finite data. The most straightforward way to proceed would then to implement the integrals in \eqref{eq:fourier_transform} and \eqref{eq:inverse_fourier_transform} as discrete sums. However, approaches based on the Discrete Fourier Transform (DFT) are often more efficient. The DFT is analogous of Fourier series and transform, but applied to discrete and finite data. For 1D data, the DFT is defined as
@@ -171,7 +178,8 @@ The idea is not to discretize $u(x,z)$, but rather to write an interpolation for
 \end{equation}
 where $\tilde{u}_m(z)$ are the Fourier coefficients, $L$ is the length of the interval in which we are interested, and $N$ is the number of points in the interval. This is simply a finite Fourier series. If we have access to the values $u_m(z) = u(x_m,z)$, where $x_m = m \Delta x, \ m=0, \ldots N-1$ and $\Delta x = L / N$, we can use the DFT to compute the Fourier coefficients $\tilde{u}_m(z)$.
 
-One important aspect of this interpolation should be mentioned: the function $u$ will have a period $L$, that is, $u(x+L,z) = u(x,z)$. This means that this approach allows us to solve the paraxial wave equation \eqref{eq:paraxial} under periodic boundary conditions. This is not strictly the physical situation, and if there is intensity in the boundaries, we will observe artifacts in the solution. However, this is a common situation in numerical simulations, and non-physical effects can be minimized by choosing a sufficiently large $L$. 
+One important aspect of this interpolation should be mentioned: the function $u$ will have a period $L$, that is, $u(x+L,z) = u(x,z)$. This means that this approach allows us to solve the paraxial wave equation \eqref{eq:paraxial} under periodic boundary conditions. This is not strictly the physical situation, and if there is intensity in the boundaries, we will observe artifacts in the solution. However, this is a common situation in numerical simulations, and non-physical effects can be minimized by choosing a sufficiently large $L$.
+
 
 \section{Propagation in turbulent media}
 
