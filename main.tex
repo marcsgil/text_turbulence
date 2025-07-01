@@ -151,14 +151,13 @@ This analogy can also be extended to understand the imaging properties of lenses
 
 \subsection{Numerical solution}
 
-\begin{figure*}
-    \includegraphics[width=\linewidth]{wave_on_string.png}
-    \centering
-    \caption{Wave on a string with different boundary conditions. }
-    \label{fig: wave on a string}
-\end{figure*}
-
 Although the angular spectrum method provides a clear algorithm for solving the paraxial wave equation, it is often more practical to implement it numerically. Although it may seem straightforward, there are some subtleties that need to be considered. In this section, we will discuss the numerical implementation of the angular spectrum method and how to avoid common pitfalls. The discussion will be based on the notes \cite{fftderiv}, which provides a detailed explanation of how to calculate derivatives based on the (Discrete) Fourier Transform. To simplify the notation, we will assume a single transverse dimension, i.e., we will consider the paraxial wave equation in 1D. The extension to 2D is straightforward. 
+
+First, we need to recognize that any numerical implementation must handle discrete and finite data. The most straightforward way to proceed would be to implement the Fresnel diffraction integral \eqref{eq:fresnel_diffraction} directly, which would require discretizing the spatial variables $x$ and $y$ and then computing the integral as a double sum. This approach is straightforward, but methods based on the angular spectrum are often more efficient.
+
+\subsubsection{The numerical angular spectrum method}
+
+As we mentioned, in order to apply the angular spectrum method numerically, the spatial domain must be finite. This means that we will only be able to access the solution $u(x, z)$ inside a window in $x$, say $x \in [0, L]$, where $L$ is the length of the window. There are two ways to interpret this: we either assume that this is just a finite portion of the solution, which exists in the entire real line, or we assume that we are only seeking to solve the paraxial wave equation in the interval $[0, L]$. The first interpretation makes more physical sense, while the second one is more practical for numerical simulations. The difference is the fact that, in the second case, we will have to impose boundary conditions at the edges of the interval, as the paraxial wave equation in itself is no longer sufficient to determine the solution uniquely.
 
 First, we need to recognize that any numerical implementation must handle discrete and finite data. The most straightforward way to proceed would then to implement the integrals in \eqref{eq:fourier_transform} and \eqref{eq:inverse_fourier_transform} as discrete sums. However, approaches based on the Discrete Fourier Transform (DFT) are often more efficient. The DFT is analogous of Fourier series and transform, but applied to discrete and finite data. For 1D data, the DFT is defined as
 \begin{equation}
