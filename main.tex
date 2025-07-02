@@ -151,14 +151,66 @@ This analogy can also be extended to understand the imaging properties of lenses
 
 \subsection{Numerical solution}
 
-Although the angular spectrum method provides a clear algorithm for solving the paraxial wave equation, it is often more practical to implement it numerically. Although it may seem straightforward, there are some subtleties that need to be considered. In this section, we will discuss the numerical implementation of the angular spectrum method and how to avoid common pitfalls. The discussion will be based on the notes \cite{fftderiv}, which provides a detailed explanation of how to calculate derivatives based on the (Discrete) Fourier Transform. To simplify the notation, we will assume a single transverse dimension, i.e., we will consider the paraxial wave equation in 1D. The extension to 2D is straightforward. 
+From the analytical point of view, the Fresnel diffraction integral \eqref{eq:fresnel_diffraction} would be the most straightforward way to compute the solution of the paraxial wave equation. However, it is often not practical to compute this integral directly. Instead, we will use a numerical method based on the angular spectrum method, which is often more efficient from a computational point of view.
 
-First, we need to recognize that any numerical implementation must handle discrete and finite data. The most straightforward way to proceed would be to implement the Fresnel diffraction integral \eqref{eq:fresnel_diffraction} directly, which would require discretizing the spatial variables $x$ and $y$ and then computing the integral as a double sum. This approach is straightforward, but methods based on the angular spectrum are often more efficient.
+To simplify the notation, we will assume a single transverse dimension, i.e., we will consider the paraxial wave equation in 1 transverse dimension, with a solution $u(x,z)$. The extension to two transverse  is straightforward.
 
-\subsubsection{The numerical angular spectrum method}
+\subsubsection{Representing the solution numerically}
 
-As we mentioned, in order to apply the angular spectrum method numerically, the spatial domain must be finite. This means that we will only be able to access the solution $u(x, z)$ inside a window in $x$, say $x \in [0, L]$, where $L$ is the length of the window. There are two ways to interpret this: we either assume that this is just a finite portion of the solution, which exists in the entire real line, or we assume that we are only seeking to solve the paraxial wave equation in the interval $[0, L]$. The first interpretation makes more physical sense, while the second one is more practical for numerical simulations. The difference is the fact that, in the second case, we will have to impose boundary conditions at the edges of the interval, as the paraxial wave equation in itself is no longer sufficient to determine the solution uniquely.
+Although one is used to thinking of the solution $u(x,z)$ as a continuous function, in a computer we will have to represent it as a \textit{discrete} and \textit{finite} set of values. Usually, we represent the initial condition $u(x,0)$ as an array of values $u_m(0) = u(x_m, 0)$, where $m = 0, \ldots, N-1$, and $N$ is the total number of points in the array. The values of $x$ are then given by $x_m = m \Delta x$, where $\Delta x$ is the spacing between the points. Any numerical method will then compute (an approximation of) the solution at a later time $z$ as an array of values $u_m(z) = u(x_m, z)$. Then, we can only have access to samples of the solution that lie inside the interval $[0, L]$, where $L = N \Delta x$.
 
+\subsubsection{Boundary conditions}
+
+We can interpret the restriction to a finite interval $[0, L]$ in two different ways: we either assume that this is just a finite portion of the solution, which exists in the entire real line, or we assume that we are only seeking to solve the paraxial wave equation in the interval $[0, L]$. The first interpretation makes more physical sense for free space propagation, while the second one is more practical for numerical simulations, as we will see. An important difference is that, that, in the second case, we will have to impose boundary conditions at the edges of the interval, as the paraxial wave equation in itself is no longer sufficient to determine the solution uniquely. This is true for any partial differential equation defined in a finite domain. 
+
+For example, a wave equation with one spatial dimension may model the propagation of a wave in a string. There are many possible behaviors for a wave pulse when it reaches the end of the string, and each of these behaviors corresponds to a different boundary condition. For example, if the string is fixed at the ends, we impose $u(0,t) = u(L,t) = 0$, which are the so-called Dirichlet boundary conditions. If the string is free at the ends, and we still want to have energy conservation, we impose the Neumann boundary conditions $\partial_x u(0,t) = \partial_x u(L,t) = 0$. These boundary conditions produce different solutions for the wave equation, whose differences are clearly seen in the reflection of a pulse on the edges: for Dirichlet boundary conditions, the reflected wave has a phase shift of $\pi$ (it gains a minus sign), while, for Neumann boundary conditions, there is no phase shift.
+
+For propagation in free space, the physical solution exists everywhere, and there is no boundary on which to set conditions. Even so, as already said, it is more efficient to find a solution only on the finite domain $[0,L]$, and to assume \textit{periodic} boundary conditions $u(0,z) = u(L,z)$. For our case, this is indeed nonphysical, but, at is turns out, is a good approximation to the physical situation \textit{as far as all the intensity is concentrated far away from the edges of the interval}. We will then always have to keep an eye to this, and increase $L$ if necessary. This is a fair price to pay in order to be able to find an approximate solution efficiently.
+
+\subsubsection{First attempt: the Fourier series}
+
+As we are working on finite domain $[0,L]$, the Fourier transform \eqref{eq:fourier_transform} is simply not defined. Instead, as we assumed periodic boundary conditions, there is the close concept of a Fourier series
+\begin{equation}
+    \label{eq:fourier series}
+    u(x,z) = \sum_{n=-\infty}^{\infty} \tilde{u}_n(z) e^{i k_n x}, \ \ \ k_n = \frac{2\pi n}{L},
+\end{equation}
+where the Fourier coefficients $\tilde{u}_n(z)$ are given by
+\begin{equation}
+    \tilde{u}_n(z) = \frac{1}{L} \int_0^L dx \ e^{-i k_n x} u(x,z).
+\end{equation}
+
+This is the equivalent of the Fourier transform for periodic functions, and it is defined in terms of a discrete sum over the wave numbers $k_n$, instead of continuous integral over wavenumbers. The Fourier coefficients $\tilde{u}_n(z)$ are complex numbers that encode the amplitude and phase of each harmonic component of the solution $u(x,z)$.
+
+We may then proceed just as the continuous case, and substitute the Fourier series \eqref{eq:fourier series} into the paraxial wave equation \eqref{eq:paraxial}. This leads to a simple ordinary differential equation for each Fourier coefficient $\tilde{u}_n(z)$:
+\begin{equation}
+    \left( -k_n^2 + 2ik \partial_z \right) \tilde{u}_n(z) = 0.
+\end{equation}
+The solution of this equation is given by
+\begin{equation}
+    \tilde{u}_n(z) = \tilde{u}_n(0) e^{-i k_n^2 z / 2k},
+\end{equation}
+where $\tilde{u}_n(0)$ are the Fourier coefficients of the initial condition $u(x,0)$, which can be computed as
+\begin{equation}
+    \tilde{u}_n(0) = \frac{1}{L} \int_0^L dx \ e^{-i k_n x} u(x,0).
+\end{equation}
+
+All of these expressions actually provide exact solutions of the paraxial wave equation with periodic boundary conditions, and are analogous to the angular spectrum method. 
+
+Nonetheless, there are still problems that do not allow us to use this method numerically. Note that the hypothesis of a finite domain turned the wave numbers from continuous to discrete, which is definitely a gain. Nonetheless, there are still an infinite amount of them, which, of course, cannot be handled by a computer.
+
+Another problem of this approach is the following: as mentioned, we only have access to the initial condition $u(x,0)$ in a finite set of points, which may be arranged in a vector $u_m(0) = u(x_m,0)$. In order to compute the Fourier coefficients $\tilde{u}_n(0)$, we could try to approximate it as a Riemann sum
+\begin{equation}
+    \tilde{u}_n(0) \approx \frac{1}{L} \sum_{m=0}^{N-1} e^{-i k_n x_m} u_m(0) \Delta x = \frac{1}{N} \sum_{m=0}^{N-1} e^{-i 2\pi mn/N} u_m(0).
+\end{equation}
+Note that, in this approximation, the Fourier components will form a periodic sequence: $\tilde{u}_n(0) = \tilde{u}_{n+N}(0)$. Then, the series \eqref{eq:fourier series} cannot converge, as the coefficients of the series do not decay to zero. This periodicity makes sense from an "informational point of view", as we give $N$ points of information, and we can only expect to recover $N$ Fourier coefficients.
+
+Although this approach does not work with finite data, it is an important step in the right direction. The approach we present in the next section is motivated by this discussion.
+
+\subsubsection{Second attempt: the discrete Fourier transform}
+
+The discussion will be based on the notes \cite{fftderiv}, which provides a detailed explanation of how to calculate derivatives based on the (Discrete) Fourier Transform. 
+
+As we mentioned, in order to apply the angular spectrum method numerically, the spatial domain must be finite. This means that we will only be able to access the solution $u(x, z)$ inside a finite interval in $x$, say $x \in [0, L]$, where $L$ is the length of the interval. 
 First, we need to recognize that any numerical implementation must handle discrete and finite data. The most straightforward way to proceed would then to implement the integrals in \eqref{eq:fourier_transform} and \eqref{eq:inverse_fourier_transform} as discrete sums. However, approaches based on the Discrete Fourier Transform (DFT) are often more efficient. The DFT is analogous of Fourier series and transform, but applied to discrete and finite data. For 1D data, the DFT is defined as
 \begin{equation}
     \tilde{u}_n = \sum_{m=0}^{N-1} u_m e^{-2\pi i mn/N},
