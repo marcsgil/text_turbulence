@@ -210,7 +210,7 @@ Although this approach does not work with finite data, it is an important step i
 
 \subsubsection{Second attempt: the discrete Fourier transform}
 
-Formula \eqref{eq:fourier coefficients approximation} (omiting the $1/N$ factor, that is moved elsewhere) is actually the Discrete Fourier Transform (DFT) of the data $u_m(0)$, which is defined for a finite sequence $u_0, \ldots, u_{N-1}$ as
+Formula \eqref{eq:fourier coefficients approximation} (omitting the $1/N$ factor, that is moved elsewhere) is actually the Discrete Fourier Transform (DFT) of the data $u_m(0)$, which is defined for a finite sequence $u_0, \ldots, u_{N-1}$ as
 \begin{equation}
     \label{eq:dft}
     \tilde{u}_m = \sum_{m=0}^{N-1} u_n e^{-2\pi i mn/N}, \ \ \ m = 0, \ldots, N-1,
@@ -219,7 +219,7 @@ while its inverse, which reconstructs $u_n$, is given by
 \begin{equation}
     u_n = \frac{1}{N} \sum_{m=0}^{N-1} \tilde{u}_m e^{2\pi i mn/N}.
 \end{equation}
-Now, everything is finite, which makes the DFT a powerful tool for analyzing discrete signals, and it is widely used in signal processing and numerical analysis. The advantage of the DFT is that it can be computed efficiently using the Fast Fourier Transform (FFT) algorithm \cite{cooley1965algorithm}, which has a time complexity of $O(N \log N)$, compared to the $O(N^2)$ time complexity of the naive implementation.
+Now, everything is finite, which makes the DFT a powerful tool for analyzing discrete signals, and it is widely used in signal processing and numerical analysis. The advantage of the DFT is that it can be computed efficiently using the Fast Fourier Transform (FFT) algorithm \cite{cooley1965algorithm}, which has a time complexity of $O(N \log N)$, compared to the $O(N^2)$ time complexity of the naive implementation. The YouTube videos \cite{fft_veritasium, fft_reducible} provide a good introduction to the FFT algorithm, history and applications.
 
 The discussion that follows will be based on the notes \cite{fftderiv}, which provides a detailed explanation of how to calculate derivatives based on the DFT.
 
